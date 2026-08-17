@@ -4,23 +4,94 @@ const ColorMode = {
     INITIALNUMBER: 2,
 };
 
+// Pure JavaScript Color Utilities (Zero Dependencies)
+function hexToRgb(hex) {
+    if (!hex || typeof hex !== "string") return [100, 100, 100];
+    hex = hex.replace(/^#/, '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    if (isNaN(num)) return [100, 100, 100];
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+function rgbToHex([r, g, b]) {
+    return "#" + [r, g, b].map(x => {
+        const h = Math.round(Math.max(0, Math.min(255, x))).toString(16);
+        return h.length === 1 ? "0" + h : h;
+    }).join('');
+}
+
+function interpolateRgb(rgb1, rgb2, factor) {
+    return [
+        rgb1[0] + factor * (rgb2[0] - rgb1[0]),
+        rgb1[1] + factor * (rgb2[1] - rgb1[1]),
+        rgb1[2] + factor * (rgb2[2] - rgb1[2])
+    ];
+}
+
+function hslToHex(h, s, l) {
+    let r, g, b;
+    if (s === 0) {
+        r = g = b = l;
+    } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    return rgbToHex([r * 255, g * 255, b * 255]);
+}
+
+function applyColorToFolder(folder, hex) {
+    const [r, g, b] = hexToRgb(hex);
+    const rgba = `rgba(${r}, ${g}, ${b}, 0.4)`;
+
+    // Set CSS variable for Foundry V14 native folder styling & borders
+    folder.style.setProperty("--folder-color", hex);
+
+    // Apply direct background-color with !important to folder header
+    const header = folder.querySelector(".folder-header") || folder.querySelector("header") || folder.firstElementChild;
+    if (header) {
+        header.style.setProperty("background-color", rgba, "important");
+        header.style.setProperty("--folder-color", hex);
+    }
+}
+
 class JenneAutoColor {
     /**
      * Entry point to style a sidebar directory or compendium view.
-     * Selects all folders recursively and styles them according to user configuration.
      */
-    static colorDirectory(html, category) {
-        if (!game.settings.get("jenne-auto-color", "autoColorFolder")) return;
+    static colorDirectory(target, category) {
+        if (!game.settings?.get("jenne-auto-color", "autoColorFolder")) return;
 
-        // Safely extract the raw HTML element
-        const el = html.jquery ? html[0] : html;
+        // Safely resolve the HTML container element
+        let el = null;
+        if (target instanceof HTMLElement) el = target;
+        else if (target?.jquery) el = target[0];
+        else if (target?.element instanceof HTMLElement) el = target.element;
+        else if (target?.element?.jquery) el = target.element[0];
+
+        if (!el && typeof document !== "undefined") {
+            el = document.querySelector(`.sidebar-tab[data-tab="${category}"]`) || 
+                 document.querySelector(`#${category}`) || 
+                 document.querySelector(".sidebar-tab.active");
+        }
         if (!el) return;
 
         // Query all folder elements recursively
-        const folders = Array.from(el.querySelectorAll("li.folder"));
+        const folders = Array.from(el.querySelectorAll(".folder, [data-folder-id]"));
         if (folders.length === 0) return;
 
-        const mode = Number(game.settings.get("jenne-auto-color", "selectColorMode"));
+        const mode = Number(game.settings.get("jenne-auto-color", "selectColorMode")) || 0;
 
         switch (mode) {
             case ColorMode.DEFINED:
@@ -39,21 +110,16 @@ class JenneAutoColor {
      * Mode 0: Colors all folders in the directory using a gradient starting from a custom color to white.
      */
     static colorFoldersByGradient(folders, category) {
-        const startColorHex = game.settings.get("jenne-auto-color", `${category}DirectoryMainColor`);
-        if (!startColorHex) return;
-
-        // Leverage modern built-in Color class for clean color interpolation
-        const startColor = Color.fromString(startColorHex);
-        const endColor = Color.fromString("#ffffff");
+        const startColorHex = game.settings.get("jenne-auto-color", `${category}DirectoryMainColor`) || "#003399";
+        const startRgb = hexToRgb(startColorHex);
+        const endRgb = [240, 240, 240];
         const count = folders.length;
 
         folders.forEach((folder, index) => {
             const factor = count > 1 ? index / (count - 1) : 0;
-            const color = startColor.mix(endColor, 1 - factor);
-
-            // Set Foundry V14 native folder color variable on the folder element
-            folder.style.setProperty("--folder-color", color.toString());
-
+            const currentRgb = interpolateRgb(startRgb, endRgb, factor);
+            const hex = rgbToHex(currentRgb);
+            applyColorToFolder(folder, hex);
         });
     }
 
@@ -63,22 +129,21 @@ class JenneAutoColor {
     static colorFoldersByInitialLetter(folders) {
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
         folders.forEach(folder => {
-            // Find the header text (usually inside an h3 or just the text content of the header)
-            const text = folder.innerText?.trim() || "";
-            const char = text[0]?.toLowerCase();
+            const titleEl = folder.querySelector(".folder-name, .folder-title, h3, h4") || folder.querySelector(".folder-header") || folder;
+            const text = (titleEl ? titleEl.textContent : folder.textContent)?.trim() || "";
+            const cleanText = text.replace(/^[^a-zA-Z0-9]+/, "");
+            const char = cleanText[0]?.toLowerCase();
             const index = alphabet.indexOf(char);
 
-            let color;
+            let hex;
             if (index !== -1) {
-                // Distribute hue evenly across the alphabet
                 const hue = index / 26;
-                color = Color.fromHSL([hue, 0.6, 0.5]);
+                hex = hslToHex(hue, 0.75, 0.45);
             } else {
-                color = Color.fromString("#808080");
+                hex = "#555555";
             }
-            
-            folder.style.setProperty("--folder-color", color.toString());
 
+            applyColorToFolder(folder, hex);
         });
     }
 
@@ -88,44 +153,47 @@ class JenneAutoColor {
     static colorFoldersByInitialNumber(folders) {
         const numbers = "0123456789";
         folders.forEach(folder => {
-            const text = folder.innerText?.trim() || "";
-            const char = text[0]?.toLowerCase();
+            const titleEl = folder.querySelector(".folder-name, .folder-title, h3, h4") || folder.querySelector(".folder-header") || folder;
+            const text = (titleEl ? titleEl.textContent : folder.textContent)?.trim() || "";
+            const cleanText = text.replace(/^[^a-zA-Z0-9]+/, "");
+            const char = cleanText[0]?.toLowerCase();
             const index = numbers.indexOf(char);
 
-            let color;
+            let hex;
             if (index !== -1) {
-                // Distribute hue evenly across numbers
                 const hue = index / 10;
-                color = Color.fromHSL([hue, 0.8, 0.4]);
+                hex = hslToHex(hue, 0.85, 0.42);
             } else {
-                color = Color.fromString("#808080");
+                hex = "#555555";
             }
-            
-            folder.style.setProperty("--folder-color", color.toString());
 
+            applyColorToFolder(folder, hex);
         });
     }
 }
 
-// Function to refresh sidebar directories and open compendiums immediately when settings change
+// Function to refresh sidebar directories immediately when settings change
 const refreshDirectories = () => {
-    // Safely iterate over sidebar tabs if available
     if (ui?.sidebar?.tabs) {
         for (const tab of Object.values(ui.sidebar.tabs)) {
-            if (typeof tab.render === "function") tab.render();
+            if (typeof tab?.render === "function") tab.render();
         }
     } else if (ui?.sidebar && typeof ui.sidebar.render === "function") {
-        // Fallback for UI architectures where tabs are not exposed directly
         ui.sidebar.render();
     }
 
-    // Safely iterate over open windows to refresh compendium pop-outs
     if (ui?.windows) {
         for (const app of Object.values(ui.windows)) {
             if (app.metadata?.type === "Compendium" || app.constructor.name === "Compendium") {
                 if (typeof app.render === "function") app.render();
             }
         }
+    }
+
+    // Direct DOM pass on all folders currently in document
+    for (const [hookName, category] of Object.entries(HOOK_MAP)) {
+        const el = document.querySelector(`.sidebar-tab[data-tab="${category}"]`) || document.querySelector(`#${category}`);
+        if (el) JenneAutoColor.colorDirectory(el, category);
     }
 };
 
@@ -199,12 +267,9 @@ Hooks.on("renderSettingsConfig", (app, html, data) => {
         const input = el.querySelector(`[name="jenne-auto-color.${key}"]`);
         if (!input) continue;
 
-        // Create the native color-picker custom element
         const picker = document.createElement("color-picker");
         picker.setAttribute("name", `jenne-auto-color.${key}`);
         picker.setAttribute("value", input.value);
-
-        // Replace the plain text input with the modern color-picker
         input.replaceWith(picker);
     }
 });
@@ -224,6 +289,14 @@ const HOOK_MAP = {
 
 for (const [hookName, category] of Object.entries(HOOK_MAP)) {
     Hooks.on(hookName, (app, html, data) => {
-        JenneAutoColor.colorDirectory(html, category);
+        JenneAutoColor.colorDirectory(html || app, category);
     });
 }
+
+Hooks.on("changeSidebarTab", (tab) => {
+    const tabName = tab?.tabName || tab?.id;
+    const category = HOOK_MAP[`render${tabName?.charAt(0).toUpperCase() + tabName?.slice(1)}Directory`] || tabName;
+    if (category) {
+        JenneAutoColor.colorDirectory(tab?.element || document, category);
+    }
+});

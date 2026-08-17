@@ -1,23 +1,22 @@
 /* Jenne Auto Color Folder */
 
-/* In V14, native folder colors only apply to the left border/icon. 
-   This CSS forces the background of the folder header to use the assigned color 
-   (either from our auto-color script or from Foundry's native color picker). */
-
-.directory-list .folder {
-    /* Optional: we can apply a background to the whole folder, but typically just the header is colored */
-}
-
-/* Fallback for native --folder-color or our custom --jenne-bg-color */
+/* Apply background color to all folder headers */
 .directory-list .folder > .folder-header,
-.directory-list .folder > header {
-    background-color: color-mix(in srgb, var(--folder-color, transparent) 40%, transparent) !important;
-    border-radius: 3px;
-    transition: background-color 0.3s ease;
+.directory-list .folder > header,
+.sidebar-tab .folder > .folder-header,
+.sidebar-tab .folder > header,
+.folder > .folder-header,
+.folder > header {
+    border-radius: 4px;
+    margin: 1px 0;
+    transition: background-color 0.2s ease;
 }
 
-/* Ensure the text is readable */
+/* Ensure text and icons remain crisp and readable on colored backgrounds */
 .directory-list .folder > .folder-header h3,
-.directory-list .folder > header h3 {
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+.directory-list .folder > header h3,
+.sidebar-tab .folder > .folder-header h3,
+.sidebar-tab .folder > header h3 {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+    font-weight: 500;
 }
