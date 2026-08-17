@@ -14,6 +14,9 @@
   "scripts": [
     "jenne-auto-color.js"
   ],
+  "styles": [
+    "jenne-auto-color.css"
+  ],
   "languages": [
     {
       "lang": "en",

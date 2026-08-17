@@ -48,14 +48,13 @@ class JenneAutoColor {
         const count = folders.length;
 
         folders.forEach((folder, index) => {
-            const header = folder.querySelector(".folder-header");
-            if (!header) return;
-
             const factor = count > 1 ? index / (count - 1) : 0;
             const color = startColor.mix(endColor, 1 - factor);
 
-            // Apply style with a subtle opacity
-            header.style.backgroundColor = color.toRGBA(0.5);
+            // Set Foundry V14 native folder color variable on the folder element
+            folder.style.setProperty("--folder-color", color.css);
+            // Set background variable used by our custom CSS
+            folder.style.setProperty("--jenne-bg-color", color.toRGBA(0.4));
         });
     }
 
@@ -65,10 +64,8 @@ class JenneAutoColor {
     static colorFoldersByInitialLetter(folders) {
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
         folders.forEach(folder => {
-            const header = folder.querySelector(".folder-header");
-            if (!header) return;
-
-            const text = header.querySelector("h3")?.textContent?.trim() || "";
+            // Find the header text (usually inside an h3 or just the text content of the header)
+            const text = folder.innerText?.trim() || "";
             const char = text[0]?.toLowerCase();
             const index = alphabet.indexOf(char);
 
@@ -80,7 +77,9 @@ class JenneAutoColor {
             } else {
                 color = Color.fromString("#808080");
             }
-            header.style.backgroundColor = color.toRGBA(0.5);
+            
+            folder.style.setProperty("--folder-color", color.css);
+            folder.style.setProperty("--jenne-bg-color", color.toRGBA(0.4));
         });
     }
 
@@ -90,10 +89,7 @@ class JenneAutoColor {
     static colorFoldersByInitialNumber(folders) {
         const numbers = "0123456789";
         folders.forEach(folder => {
-            const header = folder.querySelector(".folder-header");
-            if (!header) return;
-
-            const text = header.querySelector("h3")?.textContent?.trim() || "";
+            const text = folder.innerText?.trim() || "";
             const char = text[0]?.toLowerCase();
             const index = numbers.indexOf(char);
 
@@ -105,7 +101,9 @@ class JenneAutoColor {
             } else {
                 color = Color.fromString("#808080");
             }
-            header.style.backgroundColor = color.toRGBA(0.4);
+            
+            folder.style.setProperty("--folder-color", color.css);
+            folder.style.setProperty("--jenne-bg-color", color.toRGBA(0.4));
         });
     }
 }
