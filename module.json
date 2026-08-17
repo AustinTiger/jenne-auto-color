@@ -1,0 +1,39 @@
+{
+  "id": "jenne-auto-color",
+  "title": "Jenne Auto Color Folder",
+  "description": "Automatically colors folders and subfolders in sidebar directories using a gradient, letter, or number coding.",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Prolice"
+    },
+    {
+      "name": "Jenne"
+    }
+  ],
+  "scripts": [
+    "jenne-auto-color.js"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "es",
+      "name": "Español",
+      "path": "lang/es.json"
+    },
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    }
+  ],
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14",
+    "maximum": "14"
+  }
+}
