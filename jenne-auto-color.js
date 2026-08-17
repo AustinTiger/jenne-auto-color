@@ -112,12 +112,22 @@ class JenneAutoColor {
 
 // Function to refresh sidebar directories and open compendiums immediately when settings change
 const refreshDirectories = () => {
-    for (const tab of Object.values(ui.sidebar.tabs)) {
-        tab.render();
+    // Safely iterate over sidebar tabs if available
+    if (ui?.sidebar?.tabs) {
+        for (const tab of Object.values(ui.sidebar.tabs)) {
+            if (typeof tab.render === "function") tab.render();
+        }
+    } else if (ui?.sidebar && typeof ui.sidebar.render === "function") {
+        // Fallback for UI architectures where tabs are not exposed directly
+        ui.sidebar.render();
     }
-    for (const app of Object.values(ui.windows)) {
-        if (app.metadata?.type === "Compendium" || app.constructor.name === "Compendium") {
-            app.render();
+
+    // Safely iterate over open windows to refresh compendium pop-outs
+    if (ui?.windows) {
+        for (const app of Object.values(ui.windows)) {
+            if (app.metadata?.type === "Compendium" || app.constructor.name === "Compendium") {
+                if (typeof app.render === "function") app.render();
+            }
         }
     }
 };
