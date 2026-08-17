@@ -52,9 +52,8 @@ class JenneAutoColor {
             const color = startColor.mix(endColor, 1 - factor);
 
             // Set Foundry V14 native folder color variable on the folder element
-            folder.style.setProperty("--folder-color", color.css);
-            // Set background variable used by our custom CSS
-            folder.style.setProperty("--jenne-bg-color", color.toRGBA(0.4));
+            folder.style.setProperty("--folder-color", color.toString());
+
         });
     }
 
@@ -78,8 +77,8 @@ class JenneAutoColor {
                 color = Color.fromString("#808080");
             }
             
-            folder.style.setProperty("--folder-color", color.css);
-            folder.style.setProperty("--jenne-bg-color", color.toRGBA(0.4));
+            folder.style.setProperty("--folder-color", color.toString());
+
         });
     }
 
@@ -102,8 +101,8 @@ class JenneAutoColor {
                 color = Color.fromString("#808080");
             }
             
-            folder.style.setProperty("--folder-color", color.css);
-            folder.style.setProperty("--jenne-bg-color", color.toRGBA(0.4));
+            folder.style.setProperty("--folder-color", color.toString());
+
         });
     }
 }

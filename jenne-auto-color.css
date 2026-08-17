@@ -11,7 +11,7 @@
 /* Fallback for native --folder-color or our custom --jenne-bg-color */
 .directory-list .folder > .folder-header,
 .directory-list .folder > header {
-    background-color: var(--jenne-bg-color, color-mix(in srgb, var(--folder-color, transparent) 40%, transparent)) !important;
+    background-color: color-mix(in srgb, var(--folder-color, transparent) 40%, transparent) !important;
     border-radius: 3px;
     transition: background-color 0.3s ease;
 }
