@@ -2,6 +2,8 @@ const ColorMode = {
     DEFINED: 0,
     INITIALLETTER: 1,
     INITIALNUMBER: 2,
+    PARENTTREE: 3,
+    DEPTHLEVEL: 4
 };
 
 // Pure JavaScript Color Utilities (Zero Dependencies)
@@ -27,6 +29,17 @@ function interpolateRgb(rgb1, rgb2, factor) {
         rgb1[1] + factor * (rgb2[1] - rgb1[1]),
         rgb1[2] + factor * (rgb2[2] - rgb1[2])
     ];
+}
+
+function adjustLuminance(rgb, amount) {
+    // amount: -1.0 to 1.0 (positive = lighter/softer, negative = deeper/darker)
+    return rgb.map(channel => {
+        if (amount > 0) {
+            return channel + (255 - channel) * amount;
+        } else {
+            return channel * (1 + amount);
+        }
+    });
 }
 
 function hslToHex(h, s, l) {
@@ -170,19 +183,77 @@ function getFolderOpacity() {
     return isNaN(val) ? 0.4 : Math.max(0.05, Math.min(1, val));
 }
 
-function applyColorToFolder(folder, hex) {
-    const [r, g, b] = hexToRgb(hex);
-    const opacity = getFolderOpacity();
-    const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+// Calculate folder nesting depth (0 = top root folder, 1 = subfolder, 2 = sub-subfolder)
+function getFolderDepth(folderEl) {
+    let depth = 0;
+    let curr = folderEl.parentElement;
+    while (curr && !curr.classList?.contains("directory-list") && !curr.classList?.contains("sidebar-tab")) {
+        if (curr.classList?.contains("folder") || (curr.dataset && curr.dataset.folderId)) {
+            depth++;
+        }
+        curr = curr.parentElement;
+    }
+    return depth;
+}
+
+// Locate the topmost root parent folder in the hierarchy
+function getRootParentFolder(folderEl) {
+    let root = folderEl;
+    let curr = folderEl.parentElement;
+    while (curr && !curr.classList?.contains("directory-list") && !curr.classList?.contains("sidebar-tab")) {
+        if (curr.classList?.contains("folder") || (curr.dataset && curr.dataset.folderId)) {
+            root = curr;
+        }
+        curr = curr.parentElement;
+    }
+    return root;
+}
+
+// Extract cleaned folder title text
+function getFolderTitleText(folderEl) {
+    const titleEl = folderEl.querySelector(".folder-name, .folder-title, h3, h4") || folderEl.querySelector(".folder-header") || folderEl;
+    const raw = (titleEl ? titleEl.textContent : folderEl.textContent)?.trim() || "";
+    return raw.replace(/^[^a-zA-Z0-9]+/, "");
+}
+
+function applyColorToFolder(folder, hex, depth = 0) {
+    let rgb = hexToRgb(hex);
+
+    // Apply progressive depth luminance shading
+    const depthShading = game.settings?.get("jenne-auto-color", "depthLuminance") || "lighter";
+    if (depth > 0) {
+        if (depthShading === "lighter") {
+            rgb = adjustLuminance(rgb, Math.min(0.55, depth * 0.18));
+        } else if (depthShading === "darker") {
+            rgb = adjustLuminance(rgb, -Math.min(0.55, depth * 0.18));
+        }
+    }
+
+    const baseOpacity = getFolderOpacity();
+    let opacity = baseOpacity;
+    if (depthShading === "subtleFade" && depth > 0) {
+        opacity = Math.max(0.15, baseOpacity - (depth * 0.08));
+    }
+
+    const shadedHex = rgbToHex(rgb);
+    const rgba = `rgba(${Math.round(rgb[0])}, ${Math.round(rgb[1])}, ${Math.round(rgb[2])}, ${opacity})`;
 
     // Set CSS variable for Foundry V14 native folder styling & borders
-    folder.style.setProperty("--folder-color", hex);
+    folder.style.setProperty("--folder-color", shadedHex);
+    folder.dataset.folderDepth = depth;
 
-    // Apply direct background-color with !important to folder header
+    // Apply indentation and direct background styling
+    const indentAmount = Number(game.settings?.get("jenne-auto-color", "subfolderIndent")) || 0;
     const header = folder.querySelector(".folder-header") || folder.querySelector("header") || folder.firstElementChild;
     if (header) {
         header.style.setProperty("background-color", rgba, "important");
-        header.style.setProperty("--folder-color", hex);
+        header.style.setProperty("--folder-color", shadedHex);
+
+        if (indentAmount > 0 && depth > 0) {
+            header.style.setProperty("margin-left", `${depth * indentAmount}px`, "important");
+        } else {
+            header.style.removeProperty("margin-left");
+        }
     }
 }
 
@@ -223,11 +294,17 @@ class JenneAutoColor {
             case ColorMode.INITIALNUMBER:
                 this.colorFoldersByInitialNumber(folders);
                 break;
+            case ColorMode.PARENTTREE:
+                this.colorFoldersByParentTree(folders);
+                break;
+            case ColorMode.DEPTHLEVEL:
+                this.colorFoldersByDepthLevel(folders);
+                break;
         }
     }
 
     /**
-     * Mode 0: Colors all folders in the directory using a gradient starting from a custom color.
+     * Mode 0: Category Gradients starting from user-configured start color
      */
     static colorFoldersByGradient(folders, category) {
         const startColorHex = game.settings.get("jenne-auto-color", `${category}DirectoryMainColor`) || "#003399";
@@ -237,24 +314,24 @@ class JenneAutoColor {
         const count = folders.length;
 
         folders.forEach((folder, index) => {
+            const depth = getFolderDepth(folder);
             const factor = count > 1 ? index / (count - 1) : 0;
             const currentRgb = interpolateRgb(startRgb, endRgb, factor);
             const hex = rgbToHex(currentRgb);
-            applyColorToFolder(folder, hex);
+            applyColorToFolder(folder, hex, depth);
         });
     }
 
     /**
-     * Mode 1: Colors folders dynamically using the active palette based on their initial letter.
+     * Mode 1: Initial Letter (A-Z palette mapping)
      */
     static colorFoldersByInitialLetter(folders) {
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
         const palette = getActivePalette();
 
         folders.forEach(folder => {
-            const titleEl = folder.querySelector(".folder-name, .folder-title, h3, h4") || folder.querySelector(".folder-header") || folder;
-            const text = (titleEl ? titleEl.textContent : folder.textContent)?.trim() || "";
-            const cleanText = text.replace(/^[^a-zA-Z0-9]+/, "");
+            const depth = getFolderDepth(folder);
+            const cleanText = getFolderTitleText(folder);
             const char = cleanText[0]?.toLowerCase();
             const index = alphabet.indexOf(char);
 
@@ -265,21 +342,20 @@ class JenneAutoColor {
                 hex = "#555555";
             }
 
-            applyColorToFolder(folder, hex);
+            applyColorToFolder(folder, hex, depth);
         });
     }
 
     /**
-     * Mode 2: Colors folders dynamically using the active palette based on their initial number.
+     * Mode 2: Initial Number (0-9 palette mapping)
      */
     static colorFoldersByInitialNumber(folders) {
         const numbers = "0123456789";
         const palette = getActivePalette();
 
         folders.forEach(folder => {
-            const titleEl = folder.querySelector(".folder-name, .folder-title, h3, h4") || folder.querySelector(".folder-header") || folder;
-            const text = (titleEl ? titleEl.textContent : folder.textContent)?.trim() || "";
-            const cleanText = text.replace(/^[^a-zA-Z0-9]+/, "");
+            const depth = getFolderDepth(folder);
+            const cleanText = getFolderTitleText(folder);
             const char = cleanText[0]?.toLowerCase();
             const index = numbers.indexOf(char);
 
@@ -290,13 +366,71 @@ class JenneAutoColor {
                 hex = "#555555";
             }
 
-            applyColorToFolder(folder, hex);
+            applyColorToFolder(folder, hex, depth);
+        });
+    }
+
+    /**
+     * Mode 3: Parent Family Tree (Subfolders inherit & shade root parent's color)
+     */
+    static colorFoldersByParentTree(folders) {
+        const alphabet = "abcdefghijklmnopqrstuvwxyz";
+        const palette = getActivePalette();
+        const rootColorCache = new Map();
+
+        // Pass 1: Compute root parent colors
+        folders.forEach(folder => {
+            const depth = getFolderDepth(folder);
+            if (depth === 0) {
+                const cleanText = getFolderTitleText(folder);
+                const char = cleanText[0]?.toLowerCase();
+                const index = alphabet.indexOf(char);
+                const hex = index !== -1 ? palette.getColor(index, 26) : "#555555";
+                rootColorCache.set(folder, hex);
+            }
+        });
+
+        // Pass 2: Apply color with depth step
+        folders.forEach(folder => {
+            const depth = getFolderDepth(folder);
+            const root = getRootParentFolder(folder);
+            let baseHex = rootColorCache.get(root);
+
+            if (!baseHex) {
+                const cleanText = getFolderTitleText(root);
+                const char = cleanText[0]?.toLowerCase();
+                const index = alphabet.indexOf(char);
+                baseHex = index !== -1 ? palette.getColor(index, 26) : "#555555";
+                rootColorCache.set(root, baseHex);
+            }
+
+            applyColorToFolder(folder, baseHex, depth);
+        });
+    }
+
+    /**
+     * Mode 4: Folder Depth Level (All folders at depth 0 get color 0, depth 1 get color 1, etc.)
+     */
+    static colorFoldersByDepthLevel(folders) {
+        const palette = getActivePalette();
+
+        folders.forEach(folder => {
+            const depth = getFolderDepth(folder);
+            // Map depth to palette colors (depth 0..4+)
+            const hex = palette.getColor(depth * 3, 26);
+            applyColorToFolder(folder, hex, depth);
         });
     }
 }
 
 // Function to refresh sidebar directories immediately when settings change
 const refreshDirectories = () => {
+    // Update body class for tree lines
+    const showTreeLines = game.settings?.get("jenne-auto-color", "depthTreeLines");
+    if (typeof document !== "undefined" && document.body) {
+        document.body.classList.toggle("jenne-tree-lines", !!showTreeLines);
+    }
+
     if (ui?.sidebar?.tabs) {
         for (const tab of Object.values(ui.sidebar.tabs)) {
             if (typeof tab?.render === "function") tab.render();
@@ -327,12 +461,14 @@ Hooks.once("init", () => {
         hint: game.i18n.localize("JENNEAUTOCOLOR.selectColorModeHint"),
         scope: "client",
         config: true,
-        default: 1, // Default to Letter
+        default: 3, // Default to Parent Family Tree!
         type: Number,
         choices: {
             0: "JENNEAUTOCOLOR.options.colormode.choices.0",
             1: "JENNEAUTOCOLOR.options.colormode.choices.1",
-            2: "JENNEAUTOCOLOR.options.colormode.choices.2"
+            2: "JENNEAUTOCOLOR.options.colormode.choices.2",
+            3: "JENNEAUTOCOLOR.options.colormode.choices.3",
+            4: "JENNEAUTOCOLOR.options.colormode.choices.4"
         },
         onChange: refreshDirectories
     });
@@ -355,6 +491,50 @@ Hooks.once("init", () => {
             "cyberpunk": "JENNEAUTOCOLOR.options.palette.cyberpunk",
             "monochrome": "JENNEAUTOCOLOR.options.palette.monochrome"
         },
+        onChange: refreshDirectories
+    });
+
+    // Subfolder Extra Indentation
+    game.settings.register("jenne-auto-color", "subfolderIndent", {
+        name: game.i18n.localize("JENNEAUTOCOLOR.subfolderIndent"),
+        hint: game.i18n.localize("JENNEAUTOCOLOR.subfolderIndentHint"),
+        scope: "client",
+        config: true,
+        type: Number,
+        default: 14,
+        range: {
+            min: 0,
+            max: 30,
+            step: 2
+        },
+        onChange: refreshDirectories
+    });
+
+    // Depth Luminance Tone
+    game.settings.register("jenne-auto-color", "depthLuminance", {
+        name: game.i18n.localize("JENNEAUTOCOLOR.depthLuminance"),
+        hint: game.i18n.localize("JENNEAUTOCOLOR.depthLuminanceHint"),
+        scope: "client",
+        config: true,
+        default: "lighter",
+        type: String,
+        choices: {
+            "lighter": "JENNEAUTOCOLOR.options.depthLuminance.lighter",
+            "darker": "JENNEAUTOCOLOR.options.depthLuminance.darker",
+            "subtleFade": "JENNEAUTOCOLOR.options.depthLuminance.subtleFade",
+            "none": "JENNEAUTOCOLOR.options.depthLuminance.none"
+        },
+        onChange: refreshDirectories
+    });
+
+    // Tree Guide Lines
+    game.settings.register("jenne-auto-color", "depthTreeLines", {
+        name: game.i18n.localize("JENNEAUTOCOLOR.depthTreeLines"),
+        hint: game.i18n.localize("JENNEAUTOCOLOR.depthTreeLinesHint"),
+        scope: "client",
+        config: true,
+        type: Boolean,
+        default: true,
         onChange: refreshDirectories
     });
 
@@ -407,6 +587,13 @@ Hooks.once("init", () => {
             default: defaultVal,
             onChange: refreshDirectories
         });
+    }
+});
+
+Hooks.once("ready", () => {
+    // Apply initial tree line class
+    if (game.settings?.get("jenne-auto-color", "depthTreeLines") && document.body) {
+        document.body.classList.add("jenne-tree-lines");
     }
 });
 
