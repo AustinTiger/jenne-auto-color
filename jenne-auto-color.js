@@ -51,9 +51,129 @@ function hslToHex(h, s, l) {
     return rgbToHex([r * 255, g * 255, b * 255]);
 }
 
+// Curated Palette Definitions
+const PALETTES = {
+    rainbow: {
+        name: "Vibrant Rainbow",
+        getColor: (index, total) => {
+            const hue = index / Math.max(1, total);
+            return hslToHex(hue, 0.85, 0.45);
+        },
+        gradientEnd: [255, 255, 255]
+    },
+    pastel: {
+        name: "Soft Pastel",
+        getColor: (index, total) => {
+            const hue = index / Math.max(1, total);
+            return hslToHex(hue, 0.50, 0.65);
+        },
+        gradientEnd: [255, 250, 245]
+    },
+    darkFantasy: {
+        name: "Dark Fantasy",
+        colors: [
+            "#5e1d1d", "#3b1a40", "#1c2d42", "#13382c", "#4a3814", 
+            "#4a1c2e", "#2c1c4d", "#19333b", "#2a3d1c", "#472814",
+            "#541818", "#33163b", "#14283d", "#103327", "#3d2d10",
+            "#421526", "#261545", "#132c33", "#223315", "#3d220e",
+            "#4f1818", "#2f1536", "#122538", "#0e2e22", "#38290e", "#3b1322"
+        ],
+        getColor: (index, total) => {
+            const list = PALETTES.darkFantasy.colors;
+            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
+            return list[idx];
+        },
+        gradientEnd: [40, 35, 30]
+    },
+    earth: {
+        name: "Earth & Nature",
+        colors: [
+            "#2d4a22", "#4a5d23", "#706d28", "#8c6b2d", "#7a4e2d",
+            "#5c341e", "#3e4224", "#204028", "#3d593b", "#636b46",
+            "#8a774c", "#946843", "#7a462b", "#4a2a1a", "#2b402b",
+            "#475431", "#6e663b", "#87663f", "#784b33", "#573220",
+            "#304730", "#4c5938", "#706b43", "#826644", "#6e4835", "#4f3123"
+        ],
+        getColor: (index, total) => {
+            const list = PALETTES.earth.colors;
+            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
+            return list[idx];
+        },
+        gradientEnd: [245, 240, 230]
+    },
+    nordic: {
+        name: "Nordic Frost",
+        colors: [
+            "#1c3144", "#204051", "#3b6978", "#518596", "#84a9ac",
+            "#2b4162", "#385170", "#466b8c", "#608ca8", "#92b4c8",
+            "#192a3e", "#253b52", "#34526b", "#496f8a", "#6990ab",
+            "#1e3a5f", "#2c4c70", "#406485", "#5880a2", "#7fa2c0",
+            "#162738", "#21364a", "#2f4c63", "#42657e", "#5f859f", "#88a9c2"
+        ],
+        getColor: (index, total) => {
+            const list = PALETTES.nordic.colors;
+            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
+            return list[idx];
+        },
+        gradientEnd: [230, 240, 248]
+    },
+    cyberpunk: {
+        name: "Neon & Cyberpunk",
+        colors: [
+            "#ff0055", "#ff00aa", "#cc00ff", "#7700ff", "#0022ff",
+            "#0088ff", "#00f0ff", "#00ffaa", "#00ff44", "#88ff00",
+            "#ffee00", "#ff8800", "#ff3300", "#ff0077", "#bb00ff",
+            "#0055ff", "#00d9ff", "#00ff88", "#55ff00", "#ffbb00",
+            "#ff4400", "#ff0099", "#9900ff", "#0099ff", "#00ffc4", "#ffff00"
+        ],
+        getColor: (index, total) => {
+            const list = PALETTES.cyberpunk.colors;
+            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
+            return list[idx];
+        },
+        gradientEnd: [255, 255, 255]
+    },
+    beneos: {
+        name: "Beneos Amber & Mahogany",
+        colors: [
+            "#591812", "#6e2517", "#85361b", "#9c4820", "#b35d24",
+            "#c27529", "#cc8c31", "#cfa242", "#ba8934", "#a16d28",
+            "#87531f", "#6e3b17", "#592712", "#731f17", "#8c2f1c",
+            "#a34321", "#b85827", "#c7722e", "#d18d38", "#d1a547",
+            "#b88b37", "#9c6f29", "#80521d", "#663814", "#52240f", "#6b1b14"
+        ],
+        getColor: (index, total) => {
+            const list = PALETTES.beneos.colors;
+            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
+            return list[idx];
+        },
+        gradientEnd: [250, 240, 220]
+    },
+    monochrome: {
+        name: "Monochrome Slate",
+        getColor: (index, total) => {
+            const factor = index / Math.max(1, total);
+            const val = Math.round(40 + factor * 130);
+            return rgbToHex([val, val + 4, val + 8]);
+        },
+        gradientEnd: [220, 225, 230]
+    }
+};
+
+function getActivePalette() {
+    const key = game.settings?.get("jenne-auto-color", "colorPalette") || "darkFantasy";
+    return PALETTES[key] || PALETTES.darkFantasy;
+}
+
+function getFolderOpacity() {
+    const val = Number(game.settings?.get("jenne-auto-color", "folderOpacity"));
+    return isNaN(val) ? 0.4 : Math.max(0.05, Math.min(1, val));
+}
+
 function applyColorToFolder(folder, hex) {
     const [r, g, b] = hexToRgb(hex);
-    const rgba = `rgba(${r}, ${g}, ${b}, 0.4)`;
+    const opacity = getFolderOpacity();
+    const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
 
     // Set CSS variable for Foundry V14 native folder styling & borders
     folder.style.setProperty("--folder-color", hex);
@@ -107,12 +227,13 @@ class JenneAutoColor {
     }
 
     /**
-     * Mode 0: Colors all folders in the directory using a gradient starting from a custom color to white.
+     * Mode 0: Colors all folders in the directory using a gradient starting from a custom color.
      */
     static colorFoldersByGradient(folders, category) {
         const startColorHex = game.settings.get("jenne-auto-color", `${category}DirectoryMainColor`) || "#003399";
         const startRgb = hexToRgb(startColorHex);
-        const endRgb = [240, 240, 240];
+        const palette = getActivePalette();
+        const endRgb = palette.gradientEnd || [240, 240, 240];
         const count = folders.length;
 
         folders.forEach((folder, index) => {
@@ -124,10 +245,12 @@ class JenneAutoColor {
     }
 
     /**
-     * Mode 1: Colors folders dynamically using HSL based on their initial letter.
+     * Mode 1: Colors folders dynamically using the active palette based on their initial letter.
      */
     static colorFoldersByInitialLetter(folders) {
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
+        const palette = getActivePalette();
+
         folders.forEach(folder => {
             const titleEl = folder.querySelector(".folder-name, .folder-title, h3, h4") || folder.querySelector(".folder-header") || folder;
             const text = (titleEl ? titleEl.textContent : folder.textContent)?.trim() || "";
@@ -137,8 +260,7 @@ class JenneAutoColor {
 
             let hex;
             if (index !== -1) {
-                const hue = index / 26;
-                hex = hslToHex(hue, 0.75, 0.45);
+                hex = palette.getColor(index, 26);
             } else {
                 hex = "#555555";
             }
@@ -148,10 +270,12 @@ class JenneAutoColor {
     }
 
     /**
-     * Mode 2: Colors folders dynamically using HSL based on their initial number.
+     * Mode 2: Colors folders dynamically using the active palette based on their initial number.
      */
     static colorFoldersByInitialNumber(folders) {
         const numbers = "0123456789";
+        const palette = getActivePalette();
+
         folders.forEach(folder => {
             const titleEl = folder.querySelector(".folder-name, .folder-title, h3, h4") || folder.querySelector(".folder-header") || folder;
             const text = (titleEl ? titleEl.textContent : folder.textContent)?.trim() || "";
@@ -161,8 +285,7 @@ class JenneAutoColor {
 
             let hex;
             if (index !== -1) {
-                const hue = index / 10;
-                hex = hslToHex(hue, 0.85, 0.42);
+                hex = palette.getColor(index, 10);
             } else {
                 hex = "#555555";
             }
@@ -198,12 +321,13 @@ const refreshDirectories = () => {
 };
 
 Hooks.once("init", () => {
+    // Mode Selection
     game.settings.register("jenne-auto-color", "selectColorMode", {
         name: game.i18n.localize("JENNEAUTOCOLOR.selectColorMode"),
         hint: game.i18n.localize("JENNEAUTOCOLOR.selectColorModeHint"),
         scope: "client",
         config: true,
-        default: 0,
+        default: 1, // Default to Letter
         type: Number,
         choices: {
             0: "JENNEAUTOCOLOR.options.colormode.choices.0",
@@ -213,6 +337,28 @@ Hooks.once("init", () => {
         onChange: refreshDirectories
     });
 
+    // Palette Selection
+    game.settings.register("jenne-auto-color", "colorPalette", {
+        name: game.i18n.localize("JENNEAUTOCOLOR.colorPalette"),
+        hint: game.i18n.localize("JENNEAUTOCOLOR.colorPaletteHint"),
+        scope: "client",
+        config: true,
+        default: "darkFantasy",
+        type: String,
+        choices: {
+            "darkFantasy": "JENNEAUTOCOLOR.options.palette.darkFantasy",
+            "earth": "JENNEAUTOCOLOR.options.palette.earth",
+            "nordic": "JENNEAUTOCOLOR.options.palette.nordic",
+            "beneos": "JENNEAUTOCOLOR.options.palette.beneos",
+            "pastel": "JENNEAUTOCOLOR.options.palette.pastel",
+            "rainbow": "JENNEAUTOCOLOR.options.palette.rainbow",
+            "cyberpunk": "JENNEAUTOCOLOR.options.palette.cyberpunk",
+            "monochrome": "JENNEAUTOCOLOR.options.palette.monochrome"
+        },
+        onChange: refreshDirectories
+    });
+
+    // Master Enable Toggle
     game.settings.register("jenne-auto-color", "autoColorFolder", {
         name: game.i18n.localize("JENNEAUTOCOLOR.autocolorfolder"),
         hint: game.i18n.localize("JENNEAUTOCOLOR.autocolorfolderHint"),
@@ -223,6 +369,23 @@ Hooks.once("init", () => {
         onChange: refreshDirectories
     });
 
+    // Opacity
+    game.settings.register("jenne-auto-color", "folderOpacity", {
+        name: game.i18n.localize("JENNEAUTOCOLOR.folderOpacity"),
+        hint: game.i18n.localize("JENNEAUTOCOLOR.folderOpacityHint"),
+        scope: "client",
+        type: Number,
+        default: 0.4,
+        config: true,
+        range: {
+            min: 0.1,
+            max: 0.9,
+            step: 0.05
+        },
+        onChange: refreshDirectories
+    });
+
+    // Gradient start colors per category
     const colorSettings = {
         scene: "#000000",
         actor: "#640000",
@@ -284,7 +447,8 @@ const HOOK_MAP = {
     renderCompendium: "compendium",
     renderPlaylistDirectory: "playlist",
     renderRollTableDirectory: "rollTable",
-    renderCardsDirectory: "cards"
+    renderCardsDirectory: "cards",
+    renderPlaceableDirectory: "placeable"
 };
 
 for (const [hookName, category] of Object.entries(HOOK_MAP)) {
