@@ -32,7 +32,6 @@ function interpolateRgb(rgb1, rgb2, factor) {
 }
 
 function adjustLuminance(rgb, amount) {
-    // amount: -1.0 to 1.0 (positive = lighter/softer, negative = deeper/darker)
     return rgb.map(channel => {
         if (amount > 0) {
             return channel + (255 - channel) * amount;
@@ -416,12 +415,65 @@ class JenneAutoColor {
 
         folders.forEach(folder => {
             const depth = getFolderDepth(folder);
-            // Map depth to palette colors (depth 0..4+)
             const hex = palette.getColor(depth * 3, 26);
             applyColorToFolder(folder, hex, depth);
         });
     }
 }
+
+// Dedicated Settings HUD Form Application
+class JenneAutoColorConfig extends FormApplication {
+    static get defaultOptions() {
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            id: "jenne-auto-color-config",
+            title: "Jenne Auto Color - Settings HUD",
+            template: "modules/jenne-auto-color/templates/config.hbs",
+            width: 540,
+            height: "auto",
+            closeOnSubmit: true,
+            resizable: true
+        });
+    }
+
+    getData() {
+        const opacity = Number(game.settings.get("jenne-auto-color", "folderOpacity")) || 0.4;
+        return {
+            autoColorFolder: game.settings.get("jenne-auto-color", "autoColorFolder"),
+            selectColorMode: Number(game.settings.get("jenne-auto-color", "selectColorMode")),
+            colorPalette: game.settings.get("jenne-auto-color", "colorPalette"),
+            folderOpacity: opacity,
+            percentOpacity: `${Math.round(opacity * 100)}%`,
+            subfolderIndent: Number(game.settings.get("jenne-auto-color", "subfolderIndent")) ?? 14,
+            depthLuminance: game.settings.get("jenne-auto-color", "depthLuminance") || "lighter",
+            depthTreeLines: game.settings.get("jenne-auto-color", "depthTreeLines") ?? true,
+            colorSettings: {
+                scene: game.settings.get("jenne-auto-color", "sceneDirectoryMainColor"),
+                actor: game.settings.get("jenne-auto-color", "actorDirectoryMainColor"),
+                item: game.settings.get("jenne-auto-color", "itemDirectoryMainColor"),
+                journal: game.settings.get("jenne-auto-color", "journalDirectoryMainColor"),
+                compendium: game.settings.get("jenne-auto-color", "compendiumDirectoryMainColor"),
+                rollTable: game.settings.get("jenne-auto-color", "rollTableDirectoryMainColor"),
+                playlist: game.settings.get("jenne-auto-color", "playlistDirectoryMainColor"),
+                cards: game.settings.get("jenne-auto-color", "cardsDirectoryMainColor")
+            }
+        };
+    }
+
+    async _updateObject(event, formData) {
+        for (const [key, value] of Object.entries(formData)) {
+            if (key.startsWith("colorSettings.")) {
+                const subKey = key.split(".")[1];
+                await game.settings.set("jenne-auto-color", `${subKey}DirectoryMainColor`, value);
+            } else {
+                await game.settings.set("jenne-auto-color", key, value);
+            }
+        }
+        refreshDirectories();
+        ui.notifications.info("Jenne Auto Color settings saved!");
+    }
+}
+
+globalThis.JenneAutoColorConfig = JenneAutoColorConfig;
 
 // Function to refresh sidebar directories immediately when settings change
 const refreshDirectories = () => {
@@ -455,6 +507,16 @@ const refreshDirectories = () => {
 };
 
 Hooks.once("init", () => {
+    // Register Settings Menu
+    game.settings.registerMenu("jenne-auto-color", "configMenu", {
+        name: "Jenne Auto Color Settings HUD",
+        label: "Configure Jenne Auto Color",
+        hint: "Open the complete Jenne Auto Color settings dashboard",
+        icon: "fas fa-palette",
+        type: JenneAutoColorConfig,
+        restricted: false
+    });
+
     // Mode Selection
     game.settings.register("jenne-auto-color", "selectColorMode", {
         name: game.i18n.localize("JENNEAUTOCOLOR.selectColorMode"),
