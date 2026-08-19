@@ -1,160 +1,176 @@
-<form class="jenne-auto-color-config-form" autocomplete="off">
-    <div class="form-content">
+<form class="jenne-auto-color-form" autocomplete="off">
+  <div class="jenne-settings-container jenne-auto-color-container">
+    <header class="settings-header">
+      <h2><i class="fas fa-palette"></i> Jenne Auto Color Folder</h2>
+      <p class="settings-subtext">Configure visual themes, folder nesting depth, indentation, and color palettes.</p>
+    </header>
+
+    <div class="settings-body">
+      <!-- Section 1: General & Color Palette Theme -->
+      <div class="jenne-section-card">
+        <h3 class="jenne-section-title"><i class="fas fa-swatchbook"></i> Color Theme & Mode</h3>
+        
         <!-- Master Enable Toggle -->
-        <div class="form-group">
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
             <label>{{localize "JENNEAUTOCOLOR.autocolorfolder"}}</label>
-            <div class="form-fields">
-                <input type="checkbox" name="autoColorFolder" {{checked autoColorFolder}} />
-            </div>
-            <p class="notes">{{localize "JENNEAUTOCOLOR.autocolorfolderHint"}}</p>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.autocolorfolderHint"}}</span>
+          </div>
+          <div class="jenne-input-block">
+            <input type="checkbox" name="autoColorFolder" {{checked autoColorFolder}} class="jenne-checkbox" />
+          </div>
         </div>
 
         <!-- Color Mode Selection -->
-        <div class="form-group">
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
             <label>{{localize "JENNEAUTOCOLOR.selectColorMode"}}</label>
-            <div class="form-fields">
-                <select name="selectColorMode">
-                    <option value="3" {{#if (eq selectColorMode 3)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.3"}}</option>
-                    <option value="1" {{#if (eq selectColorMode 1)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.1"}}</option>
-                    <option value="4" {{#if (eq selectColorMode 4)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.4"}}</option>
-                    <option value="0" {{#if (eq selectColorMode 0)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.0"}}</option>
-                    <option value="2" {{#if (eq selectColorMode 2)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.2"}}</option>
-                </select>
-            </div>
-            <p class="notes">{{localize "JENNEAUTOCOLOR.selectColorModeHint"}}</p>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.selectColorModeHint"}}</span>
+          </div>
+          <div class="jenne-input-block">
+            <select name="selectColorMode" class="jenne-select">
+              <option value="3" {{#if (eq selectColorMode 3)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.3"}}</option>
+              <option value="1" {{#if (eq selectColorMode 1)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.1"}}</option>
+              <option value="4" {{#if (eq selectColorMode 4)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.4"}}</option>
+              <option value="0" {{#if (eq selectColorMode 0)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.0"}}</option>
+              <option value="2" {{#if (eq selectColorMode 2)}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.colormode.choices.2"}}</option>
+            </select>
+          </div>
         </div>
 
         <!-- Palette Theme -->
-        <div class="form-group">
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
             <label>{{localize "JENNEAUTOCOLOR.colorPalette"}}</label>
-            <div class="form-fields">
-                <select name="colorPalette">
-                    <option value="darkFantasy" {{#if (eq colorPalette "darkFantasy")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.darkFantasy"}}</option>
-                    <option value="earth" {{#if (eq colorPalette "earth")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.earth"}}</option>
-                    <option value="beneos" {{#if (eq colorPalette "beneos")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.beneos"}}</option>
-                    <option value="nordic" {{#if (eq colorPalette "nordic")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.nordic"}}</option>
-                    <option value="pastel" {{#if (eq colorPalette "pastel")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.pastel"}}</option>
-                    <option value="monochrome" {{#if (eq colorPalette "monochrome")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.monochrome"}}</option>
-                    <option value="cyberpunk" {{#if (eq colorPalette "cyberpunk")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.cyberpunk"}}</option>
-                    <option value="rainbow" {{#if (eq colorPalette "rainbow")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.rainbow"}}</option>
-                </select>
-            </div>
-            <p class="notes">{{localize "JENNEAUTOCOLOR.colorPaletteHint"}}</p>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.colorPaletteHint"}}</span>
+          </div>
+          <div class="jenne-input-block">
+            <select name="colorPalette" class="jenne-select">
+              <option value="darkFantasy" {{#if (eq colorPalette "darkFantasy")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.darkFantasy"}}</option>
+              <option value="earth" {{#if (eq colorPalette "earth")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.earth"}}</option>
+              <option value="beneos" {{#if (eq colorPalette "beneos")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.beneos"}}</option>
+              <option value="nordic" {{#if (eq colorPalette "nordic")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.nordic"}}</option>
+              <option value="pastel" {{#if (eq colorPalette "pastel")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.pastel"}}</option>
+              <option value="monochrome" {{#if (eq colorPalette "monochrome")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.monochrome"}}</option>
+              <option value="cyberpunk" {{#if (eq colorPalette "cyberpunk")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.cyberpunk"}}</option>
+              <option value="rainbow" {{#if (eq colorPalette "rainbow")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.palette.rainbow"}}</option>
+            </select>
+          </div>
         </div>
 
-        <!-- Hierarchy & Depth Section -->
-        <fieldset class="jenne-fieldset">
-            <legend><i class="fas fa-folder-tree"></i> Depth & Hierarchy</legend>
+        <!-- Opacity Slider -->
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
+            <label>{{localize "JENNEAUTOCOLOR.folderOpacity"}}</label>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.folderOpacityHint"}}</span>
+          </div>
+          <div class="jenne-input-block slider-block">
+            <input type="range" name="folderOpacity" value="{{folderOpacity}}" min="0.1" max="0.9" step="0.05" class="jenne-slider" oninput="this.nextElementSibling.innerText = Math.round(this.value * 100) + '%'" />
+            <span class="jenne-badge">{{percentOpacity}}</span>
+          </div>
+        </div>
+      </div>
 
-            <!-- Subfolder Indentation -->
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.subfolderIndent"}}</label>
-                <div class="form-fields">
-                    <input type="range" name="subfolderIndent" value="{{subfolderIndent}}" min="0" max="30" step="2" oninput="this.nextElementSibling.value = this.value + 'px'" />
-                    <span class="range-value">{{subfolderIndent}}px</span>
-                </div>
-                <p class="notes">{{localize "JENNEAUTOCOLOR.subfolderIndentHint"}}</p>
-            </div>
+      <!-- Section 2: Hierarchy & Depth Settings -->
+      <div class="jenne-section-card">
+        <h3 class="jenne-section-title"><i class="fas fa-folder-tree"></i> Depth & Hierarchy</h3>
 
-            <!-- Depth Luminance Shading -->
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.depthLuminance"}}</label>
-                <div class="form-fields">
-                    <select name="depthLuminance">
-                        <option value="lighter" {{#if (eq depthLuminance "lighter")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.lighter"}}</option>
-                        <option value="darker" {{#if (eq depthLuminance "darker")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.darker"}}</option>
-                        <option value="subtleFade" {{#if (eq depthLuminance "subtleFade")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.subtleFade"}}</option>
-                        <option value="none" {{#if (eq depthLuminance "none")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.none"}}</option>
-                    </select>
-                </div>
-                <p class="notes">{{localize "JENNEAUTOCOLOR.depthLuminanceHint"}}</p>
-            </div>
+        <!-- Subfolder Indentation -->
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
+            <label>{{localize "JENNEAUTOCOLOR.subfolderIndent"}}</label>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.subfolderIndentHint"}}</span>
+          </div>
+          <div class="jenne-input-block slider-block">
+            <input type="range" name="subfolderIndent" value="{{subfolderIndent}}" min="0" max="30" step="2" class="jenne-slider" oninput="this.nextElementSibling.innerText = this.value + 'px'" />
+            <span class="jenne-badge">{{subfolderIndent}}px</span>
+          </div>
+        </div>
 
-            <!-- Tree Lines -->
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.depthTreeLines"}}</label>
-                <div class="form-fields">
-                    <input type="checkbox" name="depthTreeLines" {{checked depthTreeLines}} />
-                </div>
-                <p class="notes">{{localize "JENNEAUTOCOLOR.depthTreeLinesHint"}}</p>
-            </div>
+        <!-- Depth Luminance Shading -->
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
+            <label>{{localize "JENNEAUTOCOLOR.depthLuminance"}}</label>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.depthLuminanceHint"}}</span>
+          </div>
+          <div class="jenne-input-block">
+            <select name="depthLuminance" class="jenne-select">
+              <option value="lighter" {{#if (eq depthLuminance "lighter")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.lighter"}}</option>
+              <option value="darker" {{#if (eq depthLuminance "darker")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.darker"}}</option>
+              <option value="subtleFade" {{#if (eq depthLuminance "subtleFade")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.subtleFade"}}</option>
+              <option value="none" {{#if (eq depthLuminance "none")}}selected{{/if}}>{{localize "JENNEAUTOCOLOR.options.depthLuminance.none"}}</option>
+            </select>
+          </div>
+        </div>
 
-            <!-- Opacity -->
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.folderOpacity"}}</label>
-                <div class="form-fields">
-                    <input type="range" name="folderOpacity" value="{{folderOpacity}}" min="0.1" max="0.9" step="0.05" oninput="this.nextElementSibling.value = Math.round(this.value * 100) + '%'" />
-                    <span class="range-value">{{percentOpacity}}</span>
-                </div>
-                <p class="notes">{{localize "JENNEAUTOCOLOR.folderOpacityHint"}}</p>
-            </div>
-        </fieldset>
+        <!-- Tree Guide Lines -->
+        <div class="jenne-form-row">
+          <div class="jenne-label-block">
+            <label>{{localize "JENNEAUTOCOLOR.depthTreeLines"}}</label>
+            <span class="jenne-hint">{{localize "JENNEAUTOCOLOR.depthTreeLinesHint"}}</span>
+          </div>
+          <div class="jenne-input-block">
+            <input type="checkbox" name="depthTreeLines" {{checked depthTreeLines}} class="jenne-checkbox" />
+          </div>
+        </div>
+      </div>
 
-        <!-- Category Gradient Start Colors -->
-        <fieldset class="jenne-fieldset">
-            <legend><i class="fas fa-palette"></i> Category Colors (for Gradient Mode)</legend>
+      <!-- Section 3: Category Start Colors -->
+      <div class="jenne-section-card">
+        <h3 class="jenne-section-title"><i class="fas fa-palette"></i> Category Colors <span class="title-sub">(for Gradient Mode)</span></h3>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.actorTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.actor" value="{{colorSettings.actor}}"></color-picker>
-                </div>
-            </div>
+        <div class="jenne-colors-grid">
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-user"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.actorTitle"}}</span>
+            <color-picker name="colorSettings.actor" value="{{colorSettings.actor}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.sceneTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.scene" value="{{colorSettings.scene}}"></color-picker>
-                </div>
-            </div>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-map"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.sceneTitle"}}</span>
+            <color-picker name="colorSettings.scene" value="{{colorSettings.scene}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.itemTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.item" value="{{colorSettings.item}}"></color-picker>
-                </div>
-            </div>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-shield-alt"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.itemTitle"}}</span>
+            <color-picker name="colorSettings.item" value="{{colorSettings.item}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.journalTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.journal" value="{{colorSettings.journal}}"></color-picker>
-                </div>
-            </div>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-book"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.journalTitle"}}</span>
+            <color-picker name="colorSettings.journal" value="{{colorSettings.journal}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.compendiumTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.compendium" value="{{colorSettings.compendium}}"></color-picker>
-                </div>
-            </div>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-atlas"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.compendiumTitle"}}</span>
+            <color-picker name="colorSettings.compendium" value="{{colorSettings.compendium}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.rollTableTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.rollTable" value="{{colorSettings.rollTable}}"></color-picker>
-                </div>
-            </div>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-th-list"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.rollTableTitle"}}</span>
+            <color-picker name="colorSettings.rollTable" value="{{colorSettings.rollTable}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.playlistTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.playlist" value="{{colorSettings.playlist}}"></color-picker>
-                </div>
-            </div>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-music"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.playlistTitle"}}</span>
+            <color-picker name="colorSettings.playlist" value="{{colorSettings.playlist}}"></color-picker>
+          </div>
 
-            <div class="form-group">
-                <label>{{localize "JENNEAUTOCOLOR.options.colorselector.cardsTitle"}}</label>
-                <div class="form-fields">
-                    <color-picker name="colorSettings.cards" value="{{colorSettings.cards}}"></color-picker>
-                </div>
-            </div>
-        </fieldset>
+          <div class="color-picker-item">
+            <span class="picker-label"><i class="fas fa-clone"></i> {{localize "JENNEAUTOCOLOR.options.colorselector.cardsTitle"}}</span>
+            <color-picker name="colorSettings.cards" value="{{colorSettings.cards}}"></color-picker>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <footer class="sheet-footer flexrow">
-        <button type="submit" name="submit">
-            <i class="fas fa-save"></i> Save Settings
-        </button>
+    <!-- Jenne Suite Footer with Apply and Close buttons -->
+    <footer class="settings-footer">
+      <button type="button" class="jenne-btn btn-secondary close-btn" data-action="close">
+        <i class="fas fa-times"></i> Close
+      </button>
+      <button type="button" class="jenne-btn btn-primary apply-btn" data-action="apply">
+        <i class="fas fa-check"></i> Apply Settings
+      </button>
     </footer>
+  </div>
 </form>

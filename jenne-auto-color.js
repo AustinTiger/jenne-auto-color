@@ -421,16 +421,17 @@ class JenneAutoColor {
     }
 }
 
-// Dedicated Settings HUD Form Application
+// Dedicated Settings HUD Form Application in Jenne Design System
 class JenneAutoColorConfig extends FormApplication {
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             id: "jenne-auto-color-config",
-            title: "Jenne Auto Color - Settings HUD",
+            classes: ["jenne-auto-color-window"],
+            title: "Jenne Auto Color - Settings",
             template: "modules/jenne-auto-color/templates/config.hbs",
-            width: 540,
+            width: 580,
             height: "auto",
-            closeOnSubmit: true,
+            closeOnSubmit: false,
             resizable: true
         });
     }
@@ -459,6 +460,45 @@ class JenneAutoColorConfig extends FormApplication {
         };
     }
 
+    activateListeners(html) {
+        super.activateListeners(html);
+        const root = html[0];
+        const form = root.querySelector("form") || root;
+
+        // "Apply Settings" button (saves, applies live, keeps window open)
+        html.find('[data-action="apply"]').click(async (ev) => {
+            ev.preventDefault();
+            await this._saveFormValues(form);
+            ui.notifications.info("Jenne Auto Color settings applied!");
+        });
+
+        // "Close" button (closes window)
+        html.find('[data-action="close"]').click((ev) => {
+            ev.preventDefault();
+            this.close();
+        });
+
+        // Live instant preview on dropdown / input / slider change
+        form.querySelectorAll("select, input, color-picker").forEach(input => {
+            input.addEventListener("change", async () => {
+                await this._saveFormValues(form);
+            });
+        });
+    }
+
+    async _saveFormValues(form) {
+        const formData = new FormDataExtended(form).object;
+        for (const [key, value] of Object.entries(formData)) {
+            if (key.startsWith("colorSettings.")) {
+                const subKey = key.split(".")[1];
+                await game.settings.set("jenne-auto-color", `${subKey}DirectoryMainColor`, value);
+            } else {
+                await game.settings.set("jenne-auto-color", key, value);
+            }
+        }
+        refreshDirectories();
+    }
+
     async _updateObject(event, formData) {
         for (const [key, value] of Object.entries(formData)) {
             if (key.startsWith("colorSettings.")) {
@@ -469,7 +509,6 @@ class JenneAutoColorConfig extends FormApplication {
             }
         }
         refreshDirectories();
-        ui.notifications.info("Jenne Auto Color settings saved!");
     }
 }
 
