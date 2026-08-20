@@ -208,6 +208,7 @@ body.jenne-tree-lines ol.subdirectory {
 
 .jenne-select {
     background: var(--bg-tertiary) !important;
+    background-color: #1b1612 !important;
     border: 1px solid var(--border-color) !important;
     color: var(--text-main) !important;
     padding: 6px 10px !important;
@@ -221,6 +222,26 @@ body.jenne-tree-lines ol.subdirectory {
 .jenne-select:focus {
     border-color: #d4a857 !important;
     box-shadow: 0 0 8px var(--border-color-glow) !important;
+    outline: none !important;
+}
+
+/* Explicit styling for dropdown options to fix white-on-light contrast issue */
+.jenne-select option,
+select.jenne-select option,
+.jenne-auto-color-window select option,
+.jenne-auto-color-window option {
+    background-color: #18120d !important;
+    color: #f0ebd8 !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+}
+
+.jenne-select option:hover,
+.jenne-select option:focus,
+.jenne-select option:checked,
+.jenne-auto-color-window select option:checked {
+    background-color: #3b2a1a !important;
+    color: #f0d486 !important;
 }
 
 .jenne-checkbox {
