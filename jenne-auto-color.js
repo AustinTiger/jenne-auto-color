@@ -60,8 +60,32 @@ function getIndexedColor(colorList, index, total) {
     return colorList[idx];
 }
 
-// Expanded Fantasy, Race, Class, and D&D Palettes
+// Thematic Palettes (Party Campaigns, Fantasy Realms, D&D Classes, Aesthetics)
 const PALETTES = {
+    // Campaign Legends & Party Themes
+    brokeSquad: {
+        name: "Broke Squad (Phandelver & Storm King's Hoard)",
+        colors: [
+            "#d4af37", "#f39c12", "#e67e22", "#1e3d59", "#17b978", "#2ecc71",
+            "#f1c40f", "#3498db", "#2980b9", "#27ae60", "#e74c3c", "#8e44ad",
+            "#9b59b6", "#e5b82c", "#16a085", "#0f4c81", "#d35400", "#c0392b",
+            "#1abc9c", "#34495e", "#ffb300", "#00bcd4", "#8bc34a", "#ff9800",
+            "#ff5722", "#ffd700"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.brokeSquad.colors, index, total)
+    },
+    forgottenConsensus: {
+        name: "Forgotten Consensus (Barovian Mists & Gothic Ravenloft)",
+        colors: [
+            "#4a1525", "#6b1426", "#8a1c32", "#a82840", "#3a1e36", "#522546",
+            "#2c1d38", "#413253", "#2a2438", "#352f44", "#5c5470", "#718093",
+            "#40739e", "#487eb0", "#8c1d40", "#631d38", "#381c30", "#241829",
+            "#3b2c3d", "#514357", "#6d5d73", "#8f7e96", "#992233", "#4d1122",
+            "#301e2c", "#581b2d"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.forgottenConsensus.colors, index, total)
+    },
+
     // Fantasy Races & Realms (LoTR & D&D)
     elven: {
         name: "Elven Woodland (Lothlórien / Rivendell)",
@@ -268,8 +292,8 @@ const PALETTES = {
 };
 
 function getActivePalette() {
-    const key = game.settings?.get("jenne-auto-color", "colorPalette") || "elven";
-    return PALETTES[key] || PALETTES.elven;
+    const key = game.settings?.get("jenne-auto-color", "colorPalette") || "brokeSquad";
+    return PALETTES[key] || PALETTES.brokeSquad;
 }
 
 function getFolderOpacity() {
@@ -514,7 +538,7 @@ class JenneAutoColorConfig extends FormApplication {
         return {
             autoColorFolder: game.settings.get("jenne-auto-color", "autoColorFolder"),
             selectColorMode: Number(game.settings.get("jenne-auto-color", "selectColorMode")) || 0,
-            colorPalette: game.settings.get("jenne-auto-color", "colorPalette") || "elven",
+            colorPalette: game.settings.get("jenne-auto-color", "colorPalette") || "brokeSquad",
             folderOpacity: opacity,
             percentOpacity: `${Math.round(opacity * 100)}%`,
             subfolderIndent: Number(game.settings.get("jenne-auto-color", "subfolderIndent")) ?? 14,
@@ -626,15 +650,17 @@ Hooks.once("init", () => {
         onChange: refreshDirectories
     });
 
-    // Palette Selection (Default to Elven Woodland)
+    // Palette Selection (Default to Broke Squad)
     game.settings.register("jenne-auto-color", "colorPalette", {
         name: game.i18n.localize("JENNEAUTOCOLOR.colorPalette"),
         hint: game.i18n.localize("JENNEAUTOCOLOR.colorPaletteHint"),
         scope: "client",
         config: true,
-        default: "elven",
+        default: "brokeSquad",
         type: String,
         choices: {
+            "brokeSquad": "JENNEAUTOCOLOR.options.palette.brokeSquad",
+            "forgottenConsensus": "JENNEAUTOCOLOR.options.palette.forgottenConsensus",
             "elven": "JENNEAUTOCOLOR.options.palette.elven",
             "dwarven": "JENNEAUTOCOLOR.options.palette.dwarven",
             "mordor": "JENNEAUTOCOLOR.options.palette.mordor",
