@@ -165,14 +165,6 @@ body.jenne-tree-lines ol.subdirectory {
     color: #d4a857;
 }
 
-.title-sub {
-    font-size: 11px;
-    font-weight: normal;
-    color: var(--text-muted);
-    font-family: 'Inter', sans-serif;
-    letter-spacing: 0;
-}
-
 /* Rows & Inputs */
 .jenne-form-row {
     display: flex;
@@ -214,7 +206,7 @@ body.jenne-tree-lines ol.subdirectory {
     padding: 6px 10px !important;
     border-radius: 6px !important;
     font-size: 12px !important;
-    min-width: 200px;
+    min-width: 240px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -225,7 +217,8 @@ body.jenne-tree-lines ol.subdirectory {
     outline: none !important;
 }
 
-/* Explicit styling for dropdown options to fix white-on-light contrast issue */
+/* Explicit styling for dropdown options to fix contrast */
+.jenne-select optgroup,
 .jenne-select option,
 select.jenne-select option,
 .jenne-auto-color-window select option,
@@ -234,6 +227,13 @@ select.jenne-select option,
     color: #f0ebd8 !important;
     padding: 8px 12px !important;
     font-size: 12px !important;
+}
+
+.jenne-select optgroup {
+    color: #d4a857 !important;
+    font-weight: bold;
+    font-style: normal;
+    padding-top: 6px;
 }
 
 .jenne-select option:hover,
@@ -255,7 +255,7 @@ select.jenne-select option,
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 200px;
+    min-width: 240px;
 }
 
 .jenne-slider {
@@ -275,39 +275,6 @@ select.jenne-select option,
     border-radius: 4px;
     min-width: 42px;
     text-align: center;
-}
-
-/* Colors Grid */
-.jenne-colors-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding-top: 4px;
-}
-
-.color-picker-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--bg-tertiary);
-    border: 1px solid rgba(212, 168, 87, 0.1);
-    border-radius: 6px;
-    padding: 6px 10px;
-    gap: 8px;
-}
-
-.picker-label {
-    font-size: 11px;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 500;
-}
-
-.picker-label i {
-    color: #d4a857;
-    width: 14px;
 }
 
 /* Buttons & Footer */

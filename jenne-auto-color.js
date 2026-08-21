@@ -1,9 +1,8 @@
 const ColorMode = {
-    DEFINED: 0,
+    PARENTTREE: 0,
     INITIALLETTER: 1,
     INITIALNUMBER: 2,
-    PARENTTREE: 3,
-    DEPTHLEVEL: 4
+    DEPTHLEVEL: 3
 };
 
 // Pure JavaScript Color Utilities (Zero Dependencies)
@@ -21,14 +20,6 @@ function rgbToHex([r, g, b]) {
         const h = Math.round(Math.max(0, Math.min(255, x))).toString(16);
         return h.length === 1 ? "0" + h : h;
     }).join('');
-}
-
-function interpolateRgb(rgb1, rgb2, factor) {
-    return [
-        rgb1[0] + factor * (rgb2[0] - rgb1[0]),
-        rgb1[1] + factor * (rgb2[1] - rgb1[1]),
-        rgb1[2] + factor * (rgb2[2] - rgb1[2])
-    ];
 }
 
 function adjustLuminance(rgb, amount) {
@@ -63,23 +54,150 @@ function hslToHex(h, s, l) {
     return rgbToHex([r * 255, g * 255, b * 255]);
 }
 
-// Curated Palette Definitions
+// Helper to extract color from an array palette evenly
+function getIndexedColor(colorList, index, total) {
+    const idx = Math.floor((index / Math.max(1, total)) * colorList.length) % colorList.length;
+    return colorList[idx];
+}
+
+// Expanded Fantasy, Race, Class, and D&D Palettes
 const PALETTES = {
-    rainbow: {
-        name: "Vibrant Rainbow",
-        getColor: (index, total) => {
-            const hue = index / Math.max(1, total);
-            return hslToHex(hue, 0.85, 0.45);
-        },
-        gradientEnd: [255, 255, 255]
+    // Fantasy Races & Realms (LoTR & D&D)
+    elven: {
+        name: "Elven Woodland (Lothlórien / Rivendell)",
+        colors: [
+            "#2d5a43", "#437c54", "#6fa369", "#a8c686", "#d4af37", "#b89758",
+            "#3b6e68", "#5b8c85", "#88b7b5", "#3a6073", "#1b4d3e", "#2e6f40",
+            "#52945d", "#82b37c", "#c9b037", "#a68a4d", "#335e58", "#4e7b75",
+            "#78a6a4", "#2f5163", "#143f32", "#235e34", "#447f4f", "#6f9e69",
+            "#bca532", "#977a42"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.elven.colors, index, total)
     },
-    pastel: {
-        name: "Soft Pastel",
-        getColor: (index, total) => {
-            const hue = index / Math.max(1, total);
-            return hslToHex(hue, 0.50, 0.65);
-        },
-        gradientEnd: [255, 250, 245]
+    dwarven: {
+        name: "Dwarven Forge (Moria / Mithril / Erebor)",
+        colors: [
+            "#8b2500", "#b23a00", "#d95f02", "#e67e22", "#d4af37", "#a67c1e",
+            "#5c4033", "#704214", "#8b4513", "#3d5a80", "#293241", "#985277",
+            "#7a1c00", "#9e3000", "#c45100", "#d16e17", "#c29e2f", "#936b17",
+            "#4e3529", "#5e370f", "#793c0f", "#334c6e", "#202835", "#854566",
+            "#6c1700", "#872700"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.dwarven.colors, index, total)
+    },
+    mordor: {
+        name: "Mordor & Shadow (Mount Doom / Nazgûl)",
+        colors: [
+            "#4a0e17", "#73111b", "#9c1b1e", "#bd2a1e", "#d94723", "#8c2d19",
+            "#3b1a20", "#24181b", "#1a1215", "#332211", "#4d3319", "#2e3b23",
+            "#431c3b", "#3f0a12", "#630d16", "#871518", "#a62218", "#be3c1d",
+            "#782414", "#301318", "#1c1114", "#120a0d", "#26180a", "#3b2611",
+            "#222d18", "#33132d"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.mordor.colors, index, total)
+    },
+    underdark: {
+        name: "Underdark & Drow (Menzoberranzan)",
+        colors: [
+            "#2e1a47", "#4a154b", "#6a1b9a", "#8e24aa", "#ab47bc", "#311b92",
+            "#4527a0", "#512da8", "#006064", "#00838f", "#0097a7", "#00bcd4",
+            "#1a237e", "#283593", "#303f9f", "#004d40", "#00695c", "#00796b",
+            "#37474f", "#263238", "#3f205c", "#5a2066", "#7b26aa", "#9d33b8",
+            "#b856c7", "#3b239e"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.underdark.colors, index, total)
+    },
+    dragon: {
+        name: "Dragon's Hoard (Chromatic & Metallic)",
+        colors: [
+            "#9e1a1a", "#c62828", "#d32f2f", "#b78727", "#d4af37", "#f1c40f",
+            "#0d47a1", "#1565c0", "#1976d2", "#1b5e20", "#2e7d32", "#388e3c",
+            "#263238", "#37474f", "#455a64", "#6a1b9a", "#8e24aa", "#ab47bc",
+            "#e65100", "#ef6c00", "#f57c00", "#006064", "#00838f", "#0097a7",
+            "#8b0000", "#b8860b"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.dragon.colors, index, total)
+    },
+
+    // D&D Classes & Archetypes
+    wizard: {
+        name: "Arcane Wizard (Mystra & The Weave)",
+        colors: [
+            "#1a237e", "#283593", "#303f9f", "#3949ab", "#3f51b5", "#311b92",
+            "#4527a0", "#512da8", "#5e35b1", "#673ab7", "#006064", "#00838f",
+            "#0097a7", "#00acc1", "#00bcd4", "#4a148c", "#6a1b9a", "#7b1fa2",
+            "#8e24aa", "#9c27b0", "#0d47a1", "#1565c0", "#1976d2", "#1e88e5",
+            "#2196f3", "#121858"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.wizard.colors, index, total)
+    },
+    bard: {
+        name: "Bardic Tale (College of Lore)",
+        colors: [
+            "#7b112d", "#9a1738", "#b81d43", "#c23a5b", "#8b4513", "#a0522d",
+            "#b8860b", "#d4af37", "#176b6d", "#1e8c8e", "#25abab", "#5c1d4e",
+            "#732461", "#8a2b75", "#a13289", "#6b1428", "#851731", "#9f1a3a",
+            "#a82f4d", "#74380e", "#884424", "#9d7208", "#b8972e", "#125456",
+            "#177274", "#1e8c8c"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.bard.colors, index, total)
+    },
+    paladin: {
+        name: "Divine Paladin (Holy Radiance & Smite)",
+        colors: [
+            "#b8860b", "#d4af37", "#e6c35c", "#f3d98b", "#28527a", "#3b6978",
+            "#518596", "#84a9ac", "#795548", "#8d6e63", "#a1887f", "#3f51b5",
+            "#5c6bc0", "#7986cb", "#b29500", "#cca800", "#e6bd00", "#ffd200",
+            "#1f4263", "#2f5663", "#426f7d", "#6f9194", "#614337", "#73574e",
+            "#856d65", "#32408f"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.paladin.colors, index, total)
+    },
+    druid: {
+        name: "Druidic Circle (Ancient Wilderness)",
+        colors: [
+            "#1b4332", "#2d6a4f", "#40916c", "#52b788", "#74c69d", "#2d4a22",
+            "#4a5d23", "#706d28", "#8c6b2d", "#7a4e2d", "#386641", "#6a994e",
+            "#a7c957", "#bc4749", "#5c341e", "#3e4224", "#143526", "#22533d",
+            "#327254", "#40916a", "#5cb086", "#213919", "#394819", "#57541d",
+            "#705321", "#5e3a21"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.druid.colors, index, total)
+    },
+    rogue: {
+        name: "Shadow Rogue (Thieves' Guild & Poison)",
+        colors: [
+            "#212529", "#343a40", "#495057", "#6c757d", "#1a3a2a", "#24523b",
+            "#2d6a4f", "#3d131d", "#541927", "#6a2031", "#1b263b", "#415a77",
+            "#1a1d20", "#282d32", "#3b4147", "#545b62", "#132d20", "#1b3f2d",
+            "#23523c", "#2d0d14", "#40121d", "#531826", "#141d2d", "#31445b",
+            "#141719", "#1f2327"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.rogue.colors, index, total)
+    },
+    warlock: {
+        name: "Warlock Pact (Eldritch & Hellfire)",
+        colors: [
+            "#00e5ff", "#00b0ff", "#2979ff", "#651fff", "#d500f9", "#f50057",
+            "#ff1744", "#311b92", "#4a148c", "#880e4f", "#004d40", "#006064",
+            "#00b8d4", "#0091ea", "#1565c0", "#4527a0", "#aa00ff", "#c51162",
+            "#d50000", "#23126d", "#360e66", "#610937", "#00332a", "#004144",
+            "#007a8c", "#00619c"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.warlock.colors, index, total)
+    },
+
+    // Atmospheric & Aesthetic Palettes
+    beneos: {
+        name: "Beneos Amber & Mahogany",
+        colors: [
+            "#591812", "#6e2517", "#85361b", "#9c4820", "#b35d24",
+            "#c27529", "#cc8c31", "#cfa242", "#ba8934", "#a16d28",
+            "#87531f", "#6e3b17", "#592712", "#731f17", "#8c2f1c",
+            "#a34321", "#b85827", "#c7722e", "#d18d38", "#d1a547",
+            "#b88b37", "#9c6f29", "#80521d", "#663814", "#52240f", "#6b1b14"
+        ],
+        getColor: (index, total) => getIndexedColor(PALETTES.beneos.colors, index, total)
     },
     darkFantasy: {
         name: "Dark Fantasy",
@@ -90,12 +208,7 @@ const PALETTES = {
             "#421526", "#261545", "#132c33", "#223315", "#3d220e",
             "#4f1818", "#2f1536", "#122538", "#0e2e22", "#38290e", "#3b1322"
         ],
-        getColor: (index, total) => {
-            const list = PALETTES.darkFantasy.colors;
-            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
-            return list[idx];
-        },
-        gradientEnd: [40, 35, 30]
+        getColor: (index, total) => getIndexedColor(PALETTES.darkFantasy.colors, index, total)
     },
     earth: {
         name: "Earth & Nature",
@@ -106,12 +219,7 @@ const PALETTES = {
             "#475431", "#6e663b", "#87663f", "#784b33", "#573220",
             "#304730", "#4c5938", "#706b43", "#826644", "#6e4835", "#4f3123"
         ],
-        getColor: (index, total) => {
-            const list = PALETTES.earth.colors;
-            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
-            return list[idx];
-        },
-        gradientEnd: [245, 240, 230]
+        getColor: (index, total) => getIndexedColor(PALETTES.earth.colors, index, total)
     },
     nordic: {
         name: "Nordic Frost",
@@ -122,12 +230,14 @@ const PALETTES = {
             "#1e3a5f", "#2c4c70", "#406485", "#5880a2", "#7fa2c0",
             "#162738", "#21364a", "#2f4c63", "#42657e", "#5f859f", "#88a9c2"
         ],
+        getColor: (index, total) => getIndexedColor(PALETTES.nordic.colors, index, total)
+    },
+    pastel: {
+        name: "Soft Pastel",
         getColor: (index, total) => {
-            const list = PALETTES.nordic.colors;
-            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
-            return list[idx];
-        },
-        gradientEnd: [230, 240, 248]
+            const hue = index / Math.max(1, total);
+            return hslToHex(hue, 0.50, 0.65);
+        }
     },
     cyberpunk: {
         name: "Neon & Cyberpunk",
@@ -138,28 +248,14 @@ const PALETTES = {
             "#0055ff", "#00d9ff", "#00ff88", "#55ff00", "#ffbb00",
             "#ff4400", "#ff0099", "#9900ff", "#0099ff", "#00ffc4", "#ffff00"
         ],
-        getColor: (index, total) => {
-            const list = PALETTES.cyberpunk.colors;
-            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
-            return list[idx];
-        },
-        gradientEnd: [255, 255, 255]
+        getColor: (index, total) => getIndexedColor(PALETTES.cyberpunk.colors, index, total)
     },
-    beneos: {
-        name: "Beneos Amber & Mahogany",
-        colors: [
-            "#591812", "#6e2517", "#85361b", "#9c4820", "#b35d24",
-            "#c27529", "#cc8c31", "#cfa242", "#ba8934", "#a16d28",
-            "#87531f", "#6e3b17", "#592712", "#731f17", "#8c2f1c",
-            "#a34321", "#b85827", "#c7722e", "#d18d38", "#d1a547",
-            "#b88b37", "#9c6f29", "#80521d", "#663814", "#52240f", "#6b1b14"
-        ],
+    rainbow: {
+        name: "Vibrant Rainbow",
         getColor: (index, total) => {
-            const list = PALETTES.beneos.colors;
-            const idx = Math.floor((index / Math.max(1, total)) * list.length) % list.length;
-            return list[idx];
-        },
-        gradientEnd: [250, 240, 220]
+            const hue = index / Math.max(1, total);
+            return hslToHex(hue, 0.85, 0.45);
+        }
     },
     monochrome: {
         name: "Monochrome Slate",
@@ -167,14 +263,13 @@ const PALETTES = {
             const factor = index / Math.max(1, total);
             const val = Math.round(40 + factor * 130);
             return rgbToHex([val, val + 4, val + 8]);
-        },
-        gradientEnd: [220, 225, 230]
+        }
     }
 };
 
 function getActivePalette() {
-    const key = game.settings?.get("jenne-auto-color", "colorPalette") || "darkFantasy";
-    return PALETTES[key] || PALETTES.darkFantasy;
+    const key = game.settings?.get("jenne-auto-color", "colorPalette") || "elven";
+    return PALETTES[key] || PALETTES.elven;
 }
 
 function getFolderOpacity() {
@@ -284,17 +379,14 @@ class JenneAutoColor {
         const mode = Number(game.settings.get("jenne-auto-color", "selectColorMode")) || 0;
 
         switch (mode) {
-            case ColorMode.DEFINED:
-                this.colorFoldersByGradient(folders, category);
+            case ColorMode.PARENTTREE:
+                this.colorFoldersByParentTree(folders);
                 break;
             case ColorMode.INITIALLETTER:
                 this.colorFoldersByInitialLetter(folders);
                 break;
             case ColorMode.INITIALNUMBER:
                 this.colorFoldersByInitialNumber(folders);
-                break;
-            case ColorMode.PARENTTREE:
-                this.colorFoldersByParentTree(folders);
                 break;
             case ColorMode.DEPTHLEVEL:
                 this.colorFoldersByDepthLevel(folders);
@@ -303,21 +395,40 @@ class JenneAutoColor {
     }
 
     /**
-     * Mode 0: Category Gradients starting from user-configured start color
+     * Mode 0: Parent Family Tree (Subfolders inherit & shade root parent's color)
      */
-    static colorFoldersByGradient(folders, category) {
-        const startColorHex = game.settings.get("jenne-auto-color", `${category}DirectoryMainColor`) || "#003399";
-        const startRgb = hexToRgb(startColorHex);
+    static colorFoldersByParentTree(folders) {
+        const alphabet = "abcdefghijklmnopqrstuvwxyz";
         const palette = getActivePalette();
-        const endRgb = palette.gradientEnd || [240, 240, 240];
-        const count = folders.length;
+        const rootColorCache = new Map();
 
-        folders.forEach((folder, index) => {
+        // Pass 1: Compute root parent colors
+        folders.forEach(folder => {
             const depth = getFolderDepth(folder);
-            const factor = count > 1 ? index / (count - 1) : 0;
-            const currentRgb = interpolateRgb(startRgb, endRgb, factor);
-            const hex = rgbToHex(currentRgb);
-            applyColorToFolder(folder, hex, depth);
+            if (depth === 0) {
+                const cleanText = getFolderTitleText(folder);
+                const char = cleanText[0]?.toLowerCase();
+                const index = alphabet.indexOf(char);
+                const hex = index !== -1 ? palette.getColor(index, 26) : "#555555";
+                rootColorCache.set(folder, hex);
+            }
+        });
+
+        // Pass 2: Apply color with depth step
+        folders.forEach(folder => {
+            const depth = getFolderDepth(folder);
+            const root = getRootParentFolder(folder);
+            let baseHex = rootColorCache.get(root);
+
+            if (!baseHex) {
+                const cleanText = getFolderTitleText(root);
+                const char = cleanText[0]?.toLowerCase();
+                const index = alphabet.indexOf(char);
+                baseHex = index !== -1 ? palette.getColor(index, 26) : "#555555";
+                rootColorCache.set(root, baseHex);
+            }
+
+            applyColorToFolder(folder, baseHex, depth);
         });
     }
 
@@ -370,45 +481,7 @@ class JenneAutoColor {
     }
 
     /**
-     * Mode 3: Parent Family Tree (Subfolders inherit & shade root parent's color)
-     */
-    static colorFoldersByParentTree(folders) {
-        const alphabet = "abcdefghijklmnopqrstuvwxyz";
-        const palette = getActivePalette();
-        const rootColorCache = new Map();
-
-        // Pass 1: Compute root parent colors
-        folders.forEach(folder => {
-            const depth = getFolderDepth(folder);
-            if (depth === 0) {
-                const cleanText = getFolderTitleText(folder);
-                const char = cleanText[0]?.toLowerCase();
-                const index = alphabet.indexOf(char);
-                const hex = index !== -1 ? palette.getColor(index, 26) : "#555555";
-                rootColorCache.set(folder, hex);
-            }
-        });
-
-        // Pass 2: Apply color with depth step
-        folders.forEach(folder => {
-            const depth = getFolderDepth(folder);
-            const root = getRootParentFolder(folder);
-            let baseHex = rootColorCache.get(root);
-
-            if (!baseHex) {
-                const cleanText = getFolderTitleText(root);
-                const char = cleanText[0]?.toLowerCase();
-                const index = alphabet.indexOf(char);
-                baseHex = index !== -1 ? palette.getColor(index, 26) : "#555555";
-                rootColorCache.set(root, baseHex);
-            }
-
-            applyColorToFolder(folder, baseHex, depth);
-        });
-    }
-
-    /**
-     * Mode 4: Folder Depth Level (All folders at depth 0 get color 0, depth 1 get color 1, etc.)
+     * Mode 3: Folder Depth Level (All folders at depth 0 get color 0, depth 1 get color 1, etc.)
      */
     static colorFoldersByDepthLevel(folders) {
         const palette = getActivePalette();
@@ -440,23 +513,13 @@ class JenneAutoColorConfig extends FormApplication {
         const opacity = Number(game.settings.get("jenne-auto-color", "folderOpacity")) || 0.4;
         return {
             autoColorFolder: game.settings.get("jenne-auto-color", "autoColorFolder"),
-            selectColorMode: Number(game.settings.get("jenne-auto-color", "selectColorMode")),
-            colorPalette: game.settings.get("jenne-auto-color", "colorPalette"),
+            selectColorMode: Number(game.settings.get("jenne-auto-color", "selectColorMode")) || 0,
+            colorPalette: game.settings.get("jenne-auto-color", "colorPalette") || "elven",
             folderOpacity: opacity,
             percentOpacity: `${Math.round(opacity * 100)}%`,
             subfolderIndent: Number(game.settings.get("jenne-auto-color", "subfolderIndent")) ?? 14,
             depthLuminance: game.settings.get("jenne-auto-color", "depthLuminance") || "lighter",
-            depthTreeLines: game.settings.get("jenne-auto-color", "depthTreeLines") ?? true,
-            colorSettings: {
-                scene: game.settings.get("jenne-auto-color", "sceneDirectoryMainColor"),
-                actor: game.settings.get("jenne-auto-color", "actorDirectoryMainColor"),
-                item: game.settings.get("jenne-auto-color", "itemDirectoryMainColor"),
-                journal: game.settings.get("jenne-auto-color", "journalDirectoryMainColor"),
-                compendium: game.settings.get("jenne-auto-color", "compendiumDirectoryMainColor"),
-                rollTable: game.settings.get("jenne-auto-color", "rollTableDirectoryMainColor"),
-                playlist: game.settings.get("jenne-auto-color", "playlistDirectoryMainColor"),
-                cards: game.settings.get("jenne-auto-color", "cardsDirectoryMainColor")
-            }
+            depthTreeLines: game.settings.get("jenne-auto-color", "depthTreeLines") ?? true
         };
     }
 
@@ -479,7 +542,7 @@ class JenneAutoColorConfig extends FormApplication {
         });
 
         // Live instant preview on dropdown / input / slider change
-        form.querySelectorAll("select, input, color-picker").forEach(input => {
+        form.querySelectorAll("select, input").forEach(input => {
             input.addEventListener("change", async () => {
                 await this._saveFormValues(form);
             });
@@ -489,24 +552,14 @@ class JenneAutoColorConfig extends FormApplication {
     async _saveFormValues(form) {
         const formData = new FormDataExtended(form).object;
         for (const [key, value] of Object.entries(formData)) {
-            if (key.startsWith("colorSettings.")) {
-                const subKey = key.split(".")[1];
-                await game.settings.set("jenne-auto-color", `${subKey}DirectoryMainColor`, value);
-            } else {
-                await game.settings.set("jenne-auto-color", key, value);
-            }
+            await game.settings.set("jenne-auto-color", key, value);
         }
         refreshDirectories();
     }
 
     async _updateObject(event, formData) {
         for (const [key, value] of Object.entries(formData)) {
-            if (key.startsWith("colorSettings.")) {
-                const subKey = key.split(".")[1];
-                await game.settings.set("jenne-auto-color", `${subKey}DirectoryMainColor`, value);
-            } else {
-                await game.settings.set("jenne-auto-color", key, value);
-            }
+            await game.settings.set("jenne-auto-color", key, value);
         }
         refreshDirectories();
     }
@@ -556,40 +609,50 @@ Hooks.once("init", () => {
         restricted: false
     });
 
-    // Mode Selection
+    // Mode Selection (Default to Parent Family Tree)
     game.settings.register("jenne-auto-color", "selectColorMode", {
         name: game.i18n.localize("JENNEAUTOCOLOR.selectColorMode"),
         hint: game.i18n.localize("JENNEAUTOCOLOR.selectColorModeHint"),
         scope: "client",
         config: true,
-        default: 3, // Default to Parent Family Tree!
+        default: 0, // Parent Family Tree
         type: Number,
         choices: {
             0: "JENNEAUTOCOLOR.options.colormode.choices.0",
             1: "JENNEAUTOCOLOR.options.colormode.choices.1",
             2: "JENNEAUTOCOLOR.options.colormode.choices.2",
-            3: "JENNEAUTOCOLOR.options.colormode.choices.3",
-            4: "JENNEAUTOCOLOR.options.colormode.choices.4"
+            3: "JENNEAUTOCOLOR.options.colormode.choices.3"
         },
         onChange: refreshDirectories
     });
 
-    // Palette Selection
+    // Palette Selection (Default to Elven Woodland)
     game.settings.register("jenne-auto-color", "colorPalette", {
         name: game.i18n.localize("JENNEAUTOCOLOR.colorPalette"),
         hint: game.i18n.localize("JENNEAUTOCOLOR.colorPaletteHint"),
         scope: "client",
         config: true,
-        default: "darkFantasy",
+        default: "elven",
         type: String,
         choices: {
+            "elven": "JENNEAUTOCOLOR.options.palette.elven",
+            "dwarven": "JENNEAUTOCOLOR.options.palette.dwarven",
+            "mordor": "JENNEAUTOCOLOR.options.palette.mordor",
+            "underdark": "JENNEAUTOCOLOR.options.palette.underdark",
+            "dragon": "JENNEAUTOCOLOR.options.palette.dragon",
+            "wizard": "JENNEAUTOCOLOR.options.palette.wizard",
+            "bard": "JENNEAUTOCOLOR.options.palette.bard",
+            "paladin": "JENNEAUTOCOLOR.options.palette.paladin",
+            "druid": "JENNEAUTOCOLOR.options.palette.druid",
+            "rogue": "JENNEAUTOCOLOR.options.palette.rogue",
+            "warlock": "JENNEAUTOCOLOR.options.palette.warlock",
+            "beneos": "JENNEAUTOCOLOR.options.palette.beneos",
             "darkFantasy": "JENNEAUTOCOLOR.options.palette.darkFantasy",
             "earth": "JENNEAUTOCOLOR.options.palette.earth",
             "nordic": "JENNEAUTOCOLOR.options.palette.nordic",
-            "beneos": "JENNEAUTOCOLOR.options.palette.beneos",
             "pastel": "JENNEAUTOCOLOR.options.palette.pastel",
-            "rainbow": "JENNEAUTOCOLOR.options.palette.rainbow",
             "cyberpunk": "JENNEAUTOCOLOR.options.palette.cyberpunk",
+            "rainbow": "JENNEAUTOCOLOR.options.palette.rainbow",
             "monochrome": "JENNEAUTOCOLOR.options.palette.monochrome"
         },
         onChange: refreshDirectories
@@ -665,63 +728,12 @@ Hooks.once("init", () => {
         },
         onChange: refreshDirectories
     });
-
-    // Gradient start colors per category
-    const colorSettings = {
-        scene: "#000000",
-        actor: "#640000",
-        item: "#000032",
-        journal: "#003399",
-        compendium: "#003399",
-        rollTable: "#003399",
-        playlist: "#003399",
-        cards: "#003399"
-    };
-
-    for (const [key, defaultVal] of Object.entries(colorSettings)) {
-        game.settings.register("jenne-auto-color", `${key}DirectoryMainColor`, {
-            name: game.i18n.localize(`JENNEAUTOCOLOR.options.colorselector.${key}Title`),
-            hint: game.i18n.localize(`JENNEAUTOCOLOR.options.colorselector.${key}Description`),
-            scope: "client",
-            config: true,
-            type: String,
-            default: defaultVal,
-            onChange: refreshDirectories
-        });
-    }
 });
 
 Hooks.once("ready", () => {
     // Apply initial tree line class
     if (game.settings?.get("jenne-auto-color", "depthTreeLines") && document.body) {
         document.body.classList.add("jenne-tree-lines");
-    }
-});
-
-// Hook to inject modern native <color-picker> HTML elements into the configuration sheet
-Hooks.on("renderSettingsConfig", (app, html, data) => {
-    const el = html.jquery ? html[0] : html;
-    if (!el) return;
-
-    const colorKeys = [
-        "sceneDirectoryMainColor",
-        "actorDirectoryMainColor",
-        "itemDirectoryMainColor",
-        "journalDirectoryMainColor",
-        "compendiumDirectoryMainColor",
-        "rollTableDirectoryMainColor",
-        "playlistDirectoryMainColor",
-        "cardsDirectoryMainColor"
-    ];
-
-    for (const key of colorKeys) {
-        const input = el.querySelector(`[name="jenne-auto-color.${key}"]`);
-        if (!input) continue;
-
-        const picker = document.createElement("color-picker");
-        picker.setAttribute("name", `jenne-auto-color.${key}`);
-        picker.setAttribute("value", input.value);
-        input.replaceWith(picker);
     }
 });
 
